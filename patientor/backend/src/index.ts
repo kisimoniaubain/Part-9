@@ -1,9 +1,9 @@
 import express from "express";
 import cors from "cors";
+import { v1 as uuid } from "uuid";
 
 import diagnoses from "../data/diagnoses";
 import patients from "../data/patients";
-
 import { Patient } from "./types";
 
 const app = express();
@@ -22,20 +22,29 @@ app.get("/api/diagnoses", (_req, res) => {
 });
 
 app.get("/api/patients", (_req, res) => {
-  const patientsWithoutSsn: Pick<
-    Patient,
-    "id" | "name" | "dateOfBirth" | "gender" | "occupation"
-  >[] = patients.map(
-    ({ id, name, dateOfBirth, gender, occupation }) => ({
+  const patientsWithoutSsn = patients.map(
+    ({ id, name, dateOfBirth, gender, occupation, entries }) => ({
       id,
       name,
       dateOfBirth,
       gender,
       occupation,
+      entries,
     })
   );
 
   res.json(patientsWithoutSsn);
+});
+
+app.post("/api/patients", (req, res) => {
+  const newPatient: Patient = {
+    ...req.body,
+    id: uuid(),
+  };
+
+  patients.push(newPatient);
+
+  res.status(200).json(newPatient);
 });
 
 app.listen(PORT, () => {
