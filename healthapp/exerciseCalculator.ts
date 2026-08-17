@@ -52,6 +52,25 @@ const calculateExercises = (
   };
 };
 
-console.log(
-  calculateExercises([3, 0, 2, 4.5, 0, 3, 1], 2)
+const args = process.argv.slice(2);
+
+if (args.length < 2) {
+  throw new Error(
+    "Please provide a target and at least one exercise hour."
+  );
+}
+
+const numbers: number[] = args.map(
+  (argument: string): number => Number(argument)
 );
+
+if (numbers.some((number: number): boolean => isNaN(number))) {
+  throw new Error("All arguments must be numbers.");
+}
+
+const target = numbers[0];
+const dailyExerciseHours = numbers.slice(1);
+
+console.log(calculateExercises(dailyExerciseHours, target));
+
+export {};
