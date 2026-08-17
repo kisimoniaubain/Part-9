@@ -3,21 +3,23 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-"scripts": {
-  "dev": "tsx watch src/index.ts",
-  "tsc": "tsc",
-  "lint": "eslint .",
-  "start": "node build/index.js"
-},
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "tsc": "tsc",
+    "lint": "eslint .",
+    "start": "node build/index.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "cors": "^2.8.6",
     "express": "^5.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^26.2.0",
     "eslint": "^10.8.1",
