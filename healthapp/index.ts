@@ -4,7 +4,7 @@ import { calculateExercises } from "./exerciseCalculator.ts";
 
 const app = express();
 
-const PORT = 3003;
+const PORT = 3000;
 
 app.use(express.json());
 
@@ -49,6 +49,13 @@ app.post("/exercises", (req, res) => {
 
   const dailyExercises = bodyRecord.daily_exercises;
   const target = bodyRecord.target;
+
+  if (dailyExercises === undefined || target === undefined) {
+    res.status(400).json({
+      error: "parameters missing",
+    });
+    return;
+  }
 
   if (
     !Array.isArray(dailyExercises) ||
