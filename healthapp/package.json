@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "scripts": {
-    "calculateBmi": "tsc && tsx bmiCalculator.ts"
-  },
+"scripts": {
+  "calculateBmi": "tsc && tsx bmiCalculator.ts",
+  "calculateExercises": "tsc && tsx exerciseCalculator.ts"
+},
   "devDependencies": {
     "tsx": "^4.23.12",
     "typescript": "^7.0.2"
