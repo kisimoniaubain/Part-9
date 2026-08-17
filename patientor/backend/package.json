@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "tsc": "tsc",
-    "lint": "eslint .",
-    "start": "node build/index.js"
-  },
+"scripts": {
+  "dev": "tsx watch src/index.ts",
+  "tsc": "tsc",
+  "lint": "eslint .",
+  "start": "node build/src/index.js"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",

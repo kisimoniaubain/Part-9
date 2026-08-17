@@ -1,18 +1,15 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "rootDir": "./src",
-    "outDir": "./build",
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "strict": true,
-    "skipLibCheck": true,
     "esModuleInterop": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true
+    "skipLibCheck": true,
+    "rootDir": ".",
+    "outDir": "./build",
+    "noEmitOnError": true,
+    "ignoreDeprecations": "6.0"
   },
-  "include": ["src"]
+  "include": ["src", "data"]
 }
