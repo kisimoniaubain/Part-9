@@ -1,4 +1,4 @@
-interface Result {
+export interface ExerciseResult {
   periodLength: number;
   trainingDays: number;
   success: boolean;
@@ -8,17 +8,17 @@ interface Result {
   average: number;
 }
 
-const calculateExercises = (
-  dailyExerciseHours: number[],
+export const calculateExercises = (
+  dailyExercises: number[],
   target: number
-): Result => {
-  const periodLength = dailyExerciseHours.length;
+): ExerciseResult => {
+  const periodLength = dailyExercises.length;
 
-  const trainingDays = dailyExerciseHours.filter(
+  const trainingDays = dailyExercises.filter(
     (hours) => hours > 0
   ).length;
 
-  const totalHours = dailyExerciseHours.reduce(
+  const totalHours = dailyExercises.reduce(
     (sum, hours) => sum + hours,
     0
   );
@@ -30,15 +30,15 @@ const calculateExercises = (
   let rating: number;
   let ratingDescription: string;
 
-  if (average >= target) {
-    rating = 3;
-    ratingDescription = "very good";
-  } else if (average >= target * 0.5) {
+  if (average < target * 0.5) {
+    rating = 1;
+    ratingDescription = "bad";
+  } else if (average < target) {
     rating = 2;
     ratingDescription = "not too bad but could be better";
   } else {
-    rating = 1;
-    ratingDescription = "could be better";
+    rating = 3;
+    ratingDescription = "good";
   }
 
   return {
@@ -48,29 +48,26 @@ const calculateExercises = (
     rating,
     ratingDescription,
     target,
-    average
+    average,
   };
 };
 
-const args = process.argv.slice(2);
+if (process.argv[1] === import.meta.filename) {
+  const args = process.argv.slice(2);
 
-if (args.length < 2) {
-  throw new Error(
-    "Please provide a target and at least one exercise hour."
-  );
+  if (args.length < 2) {
+    throw new Error("Please provide target and exercise hours");
+  }
+
+  const target = Number(args[0]);
+  const dailyExercises = args.slice(1).map(Number);
+
+  if (
+    isNaN(target) ||
+    dailyExercises.some((exercise: number) => isNaN(exercise))
+  ) {
+    throw new Error("Arguments must be numbers");
+  }
+
+  console.log(calculateExercises(dailyExercises, target));
 }
-
-const numbers: number[] = args.map(
-  (argument: string): number => Number(argument)
-);
-
-if (numbers.some((number: number): boolean => isNaN(number))) {
-  throw new Error("All arguments must be numbers.");
-}
-
-const target = numbers[0];
-const dailyExerciseHours = numbers.slice(1);
-
-console.log(calculateExercises(dailyExerciseHours, target));
-
-export {};
