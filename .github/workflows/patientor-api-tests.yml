@@ -21,6 +21,10 @@ jobs:
       working-directory: ./patientor/backend
       run: npm install --legacy-peer-deps
 
+    - name: Build patientor backend
+      working-directory: ./patientor/backend
+      run: npm run tsc
+
     - name: Lint patientor backend
       working-directory: ./patientor/backend
       run: npm run lint
@@ -28,9 +32,10 @@ jobs:
     - name: Start patientor backend server
       working-directory: ./patientor/backend
       run: |
-        npm start &
+        npm start > server.log 2>&1 &
         echo $! > server.pid
-        sleep 3
+        sleep 5
+        cat server.log
 
     - name: Install test dependencies
       working-directory: ./patientor-api-tests
