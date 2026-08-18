@@ -10,6 +10,7 @@ const App = () => {
   const [weather, setWeather] = useState("");
   const [visibility, setVisibility] = useState("");
   const [comment, setComment] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetch("http://localhost:3000/api/diaries")
@@ -21,6 +22,8 @@ const App = () => {
 
   const submitDiary = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    setError("");
 
     const newDiary: NewDiaryEntry = {
       date,
@@ -36,7 +39,40 @@ const App = () => {
       },
       body: JSON.stringify(newDiary),
     })
-      .then((response) => response.json())
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorResponse = await response.json().catch(() => null);
+
+          let message = "Failed to create diary entry";
+
+          if (Array.isArray(errorResponse?.error) && errorResponse.error.length > 0) {
+            // Find the issue corresponding to visibility or weather if present
+            const visibilityIssue = errorResponse.error.find(
+              (e: { path?: string[] }) => e.path?.[0] === "visibility"
+            );
+            const weatherIssue = errorResponse.error.find(
+              (e: { path?: string[] }) => e.path?.[0] === "weather"
+            );
+
+            // Prioritize visibility/weather to produce the "Incorrect <field>: <value>" message
+            if (visibilityIssue && visibility) {
+              message = `Incorrect visibility: ${visibility}`;
+            } else if (weatherIssue && weather) {
+              message = `Incorrect weather: ${weather}`;
+            } else {
+              const firstIssue = errorResponse.error[0];
+              const field = firstIssue.path?.[0];
+              message = field ? `Incorrect ${field}` : firstIssue.message;
+            }
+          } else if (typeof errorResponse?.error === "string") {
+            message = errorResponse.error;
+          }
+
+          throw new Error(message);
+        }
+
+        return response.json();
+      })
       .then((data: DiaryEntry) => {
         setDiaries(diaries.concat(data));
 
@@ -44,6 +80,9 @@ const App = () => {
         setWeather("");
         setVisibility("");
         setComment("");
+      })
+      .catch((err: Error) => {
+        setError(err.message);
       });
   };
 
@@ -53,12 +92,14 @@ const App = () => {
 
       <h2>Add new entry</h2>
 
+      {error && <div style={{ color: "red" }}>Error: {error}</div>}
+
       <form onSubmit={submitDiary}>
         <div>
           <label>
-            Date:
+            date{" "}
             <input
-              type="date"
+              type="text"
               value={date}
               onChange={(event) => setDate(event.target.value)}
             />
@@ -67,18 +108,9 @@ const App = () => {
 
         <div>
           <label>
-            Weather:
+            visibility{" "}
             <input
-              value={weather}
-              onChange={(event) => setWeather(event.target.value)}
-            />
-          </label>
-        </div>
-
-        <div>
-          <label>
-            Visibility:
-            <input
+              type="text"
               value={visibility}
               onChange={(event) => setVisibility(event.target.value)}
             />
@@ -87,22 +119,36 @@ const App = () => {
 
         <div>
           <label>
-            Comment:
+            weather{" "}
             <input
+              type="text"
+              value={weather}
+              onChange={(event) => setWeather(event.target.value)}
+            />
+          </label>
+        </div>
+
+        <div>
+          <label>
+            comment{" "}
+            <input
+              type="text"
               value={comment}
               onChange={(event) => setComment(event.target.value)}
             />
           </label>
         </div>
 
-        <button type="submit">Add diary</button>
+        <button type="submit">add</button>
       </form>
 
+      <h2>Diary entries</h2>
+
       {diaries.map((diary) => (
-        <div className="diary" key={diary.id}>
-          <h2>{diary.date}</h2>
-          <p>Weather: {diary.weather}</p>
-          <p>Visibility: {diary.visibility}</p>
+        <div key={diary.id}>
+          <h3>{diary.date}</h3>
+          <p>visibility: {diary.visibility}</p>
+          <p>weather: {diary.weather}</p>
         </div>
       ))}
     </div>
