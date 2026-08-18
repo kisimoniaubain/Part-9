@@ -3,6 +3,21 @@ import type { FormEvent } from "react";
 import type { DiaryEntry, NewDiaryEntry } from "./types";
 import "./App.css";
 
+const weatherOptions = [
+  "sunny",
+  "rainy",
+  "cloudy",
+  "stormy",
+  "windy",
+] as const;
+
+const visibilityOptions = [
+  "great",
+  "good",
+  "ok",
+  "poor",
+] as const;
+
 const App = () => {
   const [diaries, setDiaries] = useState<DiaryEntry[]>([]);
 
@@ -45,24 +60,18 @@ const App = () => {
 
           let message = "Failed to create diary entry";
 
-          if (Array.isArray(errorResponse?.error) && errorResponse.error.length > 0) {
-            // Find the issue corresponding to visibility or weather if present
-            const visibilityIssue = errorResponse.error.find(
-              (e: { path?: string[] }) => e.path?.[0] === "visibility"
-            );
-            const weatherIssue = errorResponse.error.find(
-              (e: { path?: string[] }) => e.path?.[0] === "weather"
-            );
+          if (
+            Array.isArray(errorResponse?.error) &&
+            errorResponse.error.length > 0
+          ) {
+            const firstIssue = errorResponse.error[0];
 
-            // Prioritize visibility/weather to produce the "Incorrect <field>: <value>" message
-            if (visibilityIssue && visibility) {
-              message = `Incorrect visibility: ${visibility}`;
-            } else if (weatherIssue && weather) {
-              message = `Incorrect weather: ${weather}`;
-            } else {
-              const firstIssue = errorResponse.error[0];
-              const field = firstIssue.path?.[0];
-              message = field ? `Incorrect ${field}` : firstIssue.message;
+            const field = firstIssue.path?.[0];
+
+            if (field) {
+              message = `Incorrect ${field}`;
+            } else if (firstIssue.message) {
+              message = firstIssue.message;
             }
           } else if (typeof errorResponse?.error === "string") {
             message = errorResponse.error;
@@ -92,14 +101,18 @@ const App = () => {
 
       <h2>Add new entry</h2>
 
-      {error && <div style={{ color: "red" }}>Error: {error}</div>}
+      {error && (
+        <div style={{ color: "red" }}>
+          Error: {error}
+        </div>
+      )}
 
       <form onSubmit={submitDiary}>
         <div>
           <label>
             date{" "}
             <input
-              type="text"
+              type="date"
               value={date}
               onChange={(event) => setDate(event.target.value)}
             />
@@ -107,25 +120,39 @@ const App = () => {
         </div>
 
         <div>
-          <label>
-            visibility{" "}
-            <input
-              type="text"
-              value={visibility}
-              onChange={(event) => setVisibility(event.target.value)}
-            />
-          </label>
+          visibility{" "}
+          {visibilityOptions.map((option) => (
+            <label key={option}>
+              <input
+                type="radio"
+                name="visibility"
+                value={option}
+                checked={visibility === option}
+                onChange={(event) =>
+                  setVisibility(event.target.value)
+                }
+              />
+              {option}
+            </label>
+          ))}
         </div>
 
         <div>
-          <label>
-            weather{" "}
-            <input
-              type="text"
-              value={weather}
-              onChange={(event) => setWeather(event.target.value)}
-            />
-          </label>
+          weather{" "}
+          {weatherOptions.map((option) => (
+            <label key={option}>
+              <input
+                type="radio"
+                name="weather"
+                value={option}
+                checked={weather === option}
+                onChange={(event) =>
+                  setWeather(event.target.value)
+                }
+              />
+              {option}
+            </label>
+          ))}
         </div>
 
         <div>
@@ -134,7 +161,9 @@ const App = () => {
             <input
               type="text"
               value={comment}
-              onChange={(event) => setComment(event.target.value)}
+              onChange={(event) =>
+                setComment(event.target.value)
+              }
             />
           </label>
         </div>
