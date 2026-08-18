@@ -1,27 +1,50 @@
-interface Part {
+import Part from './Part';
+
+interface CoursePartBase {
   name: string;
   exerciseCount: number;
 }
 
+interface CoursePartDescription extends CoursePartBase {
+  description: string;
+}
+
+interface CoursePartBasic extends CoursePartDescription {
+  kind: "basic";
+}
+
+interface CoursePartGroup extends CoursePartBase {
+  groupProjectCount: number;
+  kind: "group";
+}
+
+interface CoursePartBackground extends CoursePartDescription {
+  backgroundMaterial: string;
+  kind: "background";
+}
+
+interface CoursePartSpecial extends CoursePartDescription {
+  requirements: string[];
+  kind: "special";
+}
+
+type CoursePart =
+  | CoursePartBasic
+  | CoursePartGroup
+  | CoursePartBackground
+  | CoursePartSpecial;
+
 interface ContentProps {
-  parts: Part[];
+  parts: CoursePart[];
 }
 
 const Content = ({ parts }: ContentProps) => {
   return (
-    <>
-      <p>
-        {parts[0].name} {parts[0].exerciseCount}
-      </p>
-
-      <p>
-        {parts[1].name} {parts[1].exerciseCount}
-      </p>
-
-      <p>
-        {parts[2].name} {parts[2].exerciseCount}
-      </p>
-    </>
+    <div>
+      {parts.map((part) => (
+        <Part key={part.name} part={part} />
+      ))}
+    </div>
   );
 };
 
