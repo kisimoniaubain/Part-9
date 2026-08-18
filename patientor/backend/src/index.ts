@@ -4,7 +4,7 @@ import { v1 as uuid } from "uuid";
 
 import diagnoses from "../data/diagnoses";
 import patients from "../data/patients";
-import { Gender, NewPatient, Patient } from "./types";
+import { NewPatientSchema, Patient } from "./types";
 
 const app = express();
 
@@ -36,41 +36,19 @@ app.get("/api/patients", (_req, res) => {
   res.json(patientsWithoutSsn);
 });
 
-const isString = (text: unknown): text is string => {
-  return typeof text === "string";
-};
-
-const isGender = (param: unknown): param is Gender => {
-  return Object.values(Gender).includes(param as Gender);
-};
-
-const isNewPatient = (object: unknown): object is NewPatient => {
-  if (!object || typeof object !== "object") {
-    return false;
-  }
-
-  const patient = object as Record<string, unknown>;
-
-  return (
-    isString(patient.name) &&
-    isString(patient.dateOfBirth) &&
-    isString(patient.ssn) &&
-    isGender(patient.gender) &&
-    isString(patient.occupation)
-  );
-};
-
 app.post("/api/patients", (req, res) => {
-  if (!isNewPatient(req.body)) {
+  const result = NewPatientSchema.safeParse(req.body);
+
+  if (!result.success) {
     return res.status(400).json({
-      error: "Invalid patient data"
+      error: "Invalid patient data",
     });
   }
 
   const newPatient: Patient = {
-    ...req.body,
+    ...result.data,
     id: uuid(),
-    entries: []
+    entries: [],
   };
 
   patients.push(newPatient);
