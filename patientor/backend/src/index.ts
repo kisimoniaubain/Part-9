@@ -23,17 +23,30 @@ app.get("/api/diagnoses", (_req, res) => {
 
 app.get("/api/patients", (_req, res) => {
   const patientsWithoutSsn = patients.map(
-    ({ id, name, dateOfBirth, gender, occupation, entries }) => ({
+    ({ id, name, dateOfBirth, gender, occupation }) => ({
       id,
       name,
       dateOfBirth,
       gender,
       occupation,
-      entries,
     })
   );
 
   res.json(patientsWithoutSsn);
+});
+
+app.get("/api/patients/:id", (req, res) => {
+  const patient = patients.find(
+    (patient) => patient.id === req.params.id
+  );
+
+  if (patient) {
+    res.json(patient);
+  } else {
+    res.status(404).json({
+      error: "Patient not found",
+    });
+  }
 });
 
 app.post("/api/patients", (req, res) => {
