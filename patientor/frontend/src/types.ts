@@ -12,9 +12,34 @@ export const Gender = {
 
 export type Gender = typeof Gender[keyof typeof Gender];
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface Entry {
+export interface BaseEntry {
+  id: string;
+  date: string;
+  specialist: string;
+  diagnosisCodes?: Array<Diagnosis["code"]>;
+  description: string;
 }
+
+export interface HospitalEntry extends BaseEntry {
+  type: "Hospital";
+  discharge: {
+    date: string;
+    criteria: string;
+  };
+}
+
+export interface OccupationalHealthcareEntry extends BaseEntry {
+  type: "OccupationalHealthcare";
+  employerName: string;
+  sickLeave?: {
+    startDate: string;
+    endDate: string;
+  };
+}
+
+export type Entry =
+  | HospitalEntry
+  | OccupationalHealthcareEntry;
 
 export interface Patient {
   id: string;
