@@ -10,105 +10,7 @@ import FemaleIcon from "@mui/icons-material/Female";
 import TransgenderIcon from "@mui/icons-material/Transgender";
 
 import { apiBaseUrl } from "../../constants";
-import type {
-  PatientFull,
-  HospitalEntry,
-  OccupationalHealthcareEntry,
-} from "../../types";
-
-const HospitalEntryDetails = ({
-  entry,
-}: {
-  entry: HospitalEntry;
-}) => {
-  return (
-    <Paper
-      variant="outlined"
-      sx={{ padding: 2, marginTop: 2 }}
-    >
-      <Typography variant="h6">
-        Hospital
-      </Typography>
-
-      <Typography>
-        date: {entry.date}
-      </Typography>
-
-      <Typography>
-        specialist: {entry.specialist}
-      </Typography>
-
-      <Typography>
-        description: {entry.description}
-      </Typography>
-
-      {entry.diagnosisCodes && (
-        <Typography>
-          diagnosis codes: {entry.diagnosisCodes.join(", ")}
-        </Typography>
-      )}
-
-      <Typography>
-        discharge date: {entry.discharge.date}
-      </Typography>
-
-      <Typography>
-        discharge criteria: {entry.discharge.criteria}
-      </Typography>
-    </Paper>
-  );
-};
-
-const OccupationalHealthcareEntryDetails = ({
-  entry,
-}: {
-  entry: OccupationalHealthcareEntry;
-}) => {
-  return (
-    <Paper
-      variant="outlined"
-      sx={{ padding: 2, marginTop: 2 }}
-    >
-      <Typography variant="h6">
-        Occupational Healthcare
-      </Typography>
-
-      <Typography>
-        date: {entry.date}
-      </Typography>
-
-      <Typography>
-        specialist: {entry.specialist}
-      </Typography>
-
-      <Typography>
-        employer: {entry.employerName}
-      </Typography>
-
-      <Typography>
-        description: {entry.description}
-      </Typography>
-
-      {entry.diagnosisCodes && (
-        <Typography>
-          diagnosis codes: {entry.diagnosisCodes.join(", ")}
-        </Typography>
-      )}
-
-      {entry.sickLeave && (
-        <>
-          <Typography>
-            sick leave start: {entry.sickLeave.startDate}
-          </Typography>
-
-          <Typography>
-            sick leave end: {entry.sickLeave.endDate}
-          </Typography>
-        </>
-      )}
-    </Paper>
-  );
-};
+import type { PatientFull } from "../../types";
 
 const PatientPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -181,28 +83,27 @@ const PatientPage = () => {
         </Typography>
       )}
 
-      {patient.entries.map((entry) => {
-        switch (entry.type) {
-          case "Hospital":
-            return (
-              <HospitalEntryDetails
-                key={entry.id}
-                entry={entry}
-              />
-            );
+      {patient.entries.map((entry) => (
+        <Paper
+          key={entry.id}
+          variant="outlined"
+          sx={{ padding: 2, marginTop: 2 }}
+        >
+          <Typography>
+            {entry.date} {entry.description}
+          </Typography>
 
-          case "OccupationalHealthcare":
-            return (
-              <OccupationalHealthcareEntryDetails
-                key={entry.id}
-                entry={entry}
-              />
-            );
-
-          default:
-            return null;
-        }
-      })}
+          {entry.diagnosisCodes && (
+            <ul>
+              {entry.diagnosisCodes.map((code) => (
+                <li key={code}>
+                  {code}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Paper>
+      ))}
     </Paper>
   );
 };
