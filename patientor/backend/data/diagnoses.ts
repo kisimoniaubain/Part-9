@@ -11,6 +11,26 @@ const diagnoses: Diagnosis[] = [
     name: "Pain in joint",
     latin: "Dolor articularis",
   },
+  {
+    code: "S62.5",
+    name: "Fracture of the base of thumb",
+    latin: "Fractura basis ossis pollicis",
+  },
+  {
+    code: "Z57.1",
+    name: "Occupational exposure to radiation",
+    latin: "Expositio radiis ionisantibus",
+  },
+  {
+    code: "Z74.3",
+    name: "Need for continuous supervision",
+    latin: "Necessitas continuae custodiae",
+  },
+  {
+    code: "M51.2",
+    name: "Other specified intervertebral disc displacement",
+    latin: "Alia dislocatio disci intervertebralis",
+  },
 ];
 
 export default diagnoses;

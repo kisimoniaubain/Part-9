@@ -9,7 +9,7 @@ const johnHospitalEntry: HospitalEntry = {
   date: "2015-01-02",
   type: "Hospital",
   specialist: "MD House",
-  diagnosisCodes: ["S62.5"],
+  diagnosisCodes: ["S62.5", "Z57.1", "Z74.3", "M51.2"],
   description:
     "Healing time appr. 2 weeks. patient doesn't remember how he got the injury.",
   discharge: {
@@ -24,6 +24,7 @@ const martinOccupationalEntry: OccupationalHealthcareEntry = {
   type: "OccupationalHealthcare",
   specialist: "Dr. House",
   employerName: "Acme Corporation",
+  diagnosisCodes: ["S62.5", "Z57.1", "Z74.3", "M51.2"],
   description: "Patient has been feeling tired at work.",
   sickLeave: {
     startDate: "2019-08-05",

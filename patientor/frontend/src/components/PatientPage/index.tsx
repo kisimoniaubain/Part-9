@@ -10,12 +10,16 @@ import FemaleIcon from "@mui/icons-material/Female";
 import TransgenderIcon from "@mui/icons-material/Transgender";
 
 import { apiBaseUrl } from "../../constants";
-import type { PatientFull } from "../../types";
+import type {
+  PatientFull,
+  Diagnosis,
+} from "../../types";
 
 const PatientPage = () => {
   const { id } = useParams<{ id: string }>();
 
   const [patient, setPatient] = useState<PatientFull | null>(null);
+  const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
 
   useEffect(() => {
     const fetchPatient = async () => {
@@ -36,6 +40,21 @@ const PatientPage = () => {
     void fetchPatient();
   }, [id]);
 
+  useEffect(() => {
+    const fetchDiagnoses = async () => {
+      const response = await fetch(`${apiBaseUrl}/diagnoses`);
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data: Diagnosis[] = await response.json();
+      setDiagnoses(data);
+    };
+
+    void fetchDiagnoses();
+  }, []);
+
   if (!patient) {
     return <Typography>Loading...</Typography>;
   }
@@ -47,8 +66,17 @@ const PatientPage = () => {
         ? FemaleIcon
         : TransgenderIcon;
 
+  const getDiagnosisDescription = (code: string): string => {
+    const diagnosis = diagnoses.find(
+      (diagnosis) => diagnosis.code === code
+    );
+
+    return diagnosis?.name ?? "Unknown diagnosis";
+  };
+
   return (
     <Paper elevation={2} sx={{ padding: 3 }}>
+      {/* Patient information */}
       <Box display="flex" alignItems="center" gap={1}>
         <Typography variant="h4">
           {patient.name}
@@ -57,7 +85,7 @@ const PatientPage = () => {
         <GenderIcon />
       </Box>
 
-      <Typography sx={{ marginTop: 2 }}>
+      <Typography>
         ssn: {patient.ssn}
       </Typography>
 
@@ -65,42 +93,38 @@ const PatientPage = () => {
         occupation: {patient.occupation}
       </Typography>
 
-      <Typography>
-        date of birth: {patient.dateOfBirth}
-      </Typography>
-
-      <Typography>
-        gender: {patient.gender}
-      </Typography>
-
+      {/* Entries */}
       <Typography variant="h5" sx={{ marginTop: 3 }}>
         Entries
       </Typography>
-
-      {patient.entries.length === 0 && (
-        <Typography>
-          No entries
-        </Typography>
-      )}
 
       {patient.entries.map((entry) => (
         <Paper
           key={entry.id}
           variant="outlined"
-          sx={{ padding: 2, marginTop: 2 }}
+          sx={{
+            padding: 2,
+            marginTop: 2,
+          }}
         >
-          <Typography>
-            {entry.date} {entry.description}
+          <Typography variant="h6">
+            {entry.date}
           </Typography>
 
-          {entry.diagnosisCodes && (
-            <ul>
+          <Typography>
+            {entry.description}
+          </Typography>
+
+          {entry.diagnosisCodes && entry.diagnosisCodes.length > 0 && (
+            <Box component="ul" sx={{ marginTop: 1 }}>
               {entry.diagnosisCodes.map((code) => (
                 <li key={code}>
-                  {code}
+                  <Typography component="span">
+                    {code} {getDiagnosisDescription(code)}
+                  </Typography>
                 </li>
               ))}
-            </ul>
+            </Box>
           )}
         </Paper>
       ))}
