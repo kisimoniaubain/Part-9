@@ -14,12 +14,27 @@ export const Gender = {
 
 export type Gender = typeof Gender[keyof typeof Gender];
 
+export enum HealthCheckRating {
+  Healthy = 0,
+  LowRisk = 1,
+  HighRisk = 2,
+  CriticalRisk = 3,
+}
+
 export interface BaseEntry {
   id: string;
   date: string;
   specialist: string;
   diagnosisCodes?: Array<Diagnosis["code"]>;
   description: string;
+}
+
+export interface HospitalEntry extends BaseEntry {
+  type: "Hospital";
+  discharge: {
+    date: string;
+    criteria: string;
+  };
 }
 
 export interface OccupationalHealthcareEntry extends BaseEntry {
@@ -31,15 +46,15 @@ export interface OccupationalHealthcareEntry extends BaseEntry {
   };
 }
 
-export interface HospitalEntry extends BaseEntry {
-  type: "Hospital";
-  discharge: {
-    date: string;
-    criteria: string;
-  };
+export interface HealthCheckEntry extends BaseEntry {
+  type: "HealthCheck";
+  healthCheckRating: HealthCheckRating;
 }
 
-export type Entry = OccupationalHealthcareEntry | HospitalEntry;
+export type Entry =
+  | HospitalEntry
+  | OccupationalHealthcareEntry
+  | HealthCheckEntry;
 
 export interface Patient {
   id: string;
@@ -51,7 +66,10 @@ export interface Patient {
   entries: Entry[];
 }
 
-export type NonSensitivePatient = Omit<Patient, "ssn" | "entries">;
+export type NonSensitivePatient = Omit<
+  Patient,
+  "ssn" | "entries"
+>;
 
 export const NewPatientSchema = z.object({
   name: z.string(),

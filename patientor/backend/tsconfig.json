@@ -11,5 +11,5 @@
     "noEmitOnError": true,
     "ignoreDeprecations": "6.0"
   },
-  "include": ["src", "data"]
+"include": ["src", "data", "types.ts"]
 }

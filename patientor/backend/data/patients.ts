@@ -1,4 +1,6 @@
 import {
+  HealthCheckEntry,
+  HealthCheckRating,
   HospitalEntry,
   OccupationalHealthcareEntry,
   Patient,
@@ -18,13 +20,62 @@ const johnHospitalEntry: HospitalEntry = {
   },
 };
 
+const johnHealthCheckEntry: HealthCheckEntry = {
+  id: "d811e46d-70b3-4d90-b090-4535c7cf8fb3",
+  date: "2019-10-20",
+  type: "HealthCheck",
+  specialist: "MD House",
+  diagnosisCodes: ["Z00.00"],
+  description:
+    "Yearly control visit. Cholesterol levels back to normal.",
+  healthCheckRating: HealthCheckRating.Healthy,
+};
+
+const johnOccupationalEntry: OccupationalHealthcareEntry = {
+  id: "d811e46d-70b3-4d90-b090-4535c7cf8fb5",
+  date: "2019-08-05",
+  type: "OccupationalHealthcare",
+  specialist: "Dr. House",
+  employerName: "Acme Corporation",
+  diagnosisCodes: ["S62.5"],
+  description: "Patient has been feeling tired at work.",
+  sickLeave: {
+    startDate: "2019-08-05",
+    endDate: "2019-08-10",
+  },
+};
+
+const martinHealthCheckEntry: HealthCheckEntry = {
+  id: "d811e46d-70b3-4d90-b090-4535c7cf8fb3",
+  date: "2019-10-20",
+  type: "HealthCheck",
+  specialist: "MD House",
+  diagnosisCodes: ["Z00.00"],
+  description:
+    "Yearly control visit. Cholesterol levels back to normal.",
+  healthCheckRating: HealthCheckRating.Healthy,
+};
+
+const martinHospitalEntry: HospitalEntry = {
+  id: "d811e46d-70b3-4d90-b090-4535c7cf8fb4",
+  date: "2019-09-10",
+  type: "Hospital",
+  specialist: "MD House",
+  diagnosisCodes: ["S62.5"],
+  description: "Prescriptions renewed.",
+  discharge: {
+    date: "2019-09-20",
+    criteria: "Patient recovered",
+  },
+};
+
 const martinOccupationalEntry: OccupationalHealthcareEntry = {
   id: "d811e46d-70b3-4d90-b090-4535c7cf8fb2",
   date: "2019-08-05",
   type: "OccupationalHealthcare",
   specialist: "Dr. House",
   employerName: "Acme Corporation",
-  diagnosisCodes: ["S62.5", "Z57.1", "Z74.3", "M51.2"],
+  diagnosisCodes: ["S62.5"],
   description: "Patient has been feeling tired at work.",
   sickLeave: {
     startDate: "2019-08-05",
@@ -40,7 +91,11 @@ const patients: Patient[] = [
     ssn: "090786-122X",
     gender: "male",
     occupation: "New york city cop",
-    entries: [johnHospitalEntry],
+    entries: [
+      johnHealthCheckEntry,
+      johnHospitalEntry,
+      johnOccupationalEntry,
+    ],
   },
 
   {
@@ -50,7 +105,11 @@ const patients: Patient[] = [
     ssn: "300179-123A",
     gender: "male",
     occupation: "Cop",
-    entries: [martinOccupationalEntry],
+    entries: [
+      martinHealthCheckEntry,
+      martinHospitalEntry,
+      martinOccupationalEntry,
+    ],
   },
 ];
 

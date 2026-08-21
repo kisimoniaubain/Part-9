@@ -12,6 +12,13 @@ export const Gender = {
 
 export type Gender = typeof Gender[keyof typeof Gender];
 
+export enum HealthCheckRating {
+  Healthy = 0,
+  LowRisk = 1,
+  HighRisk = 2,
+  CriticalRisk = 3,
+}
+
 export interface BaseEntry {
   id: string;
   date: string;
@@ -28,7 +35,7 @@ export interface HospitalEntry extends BaseEntry {
   };
 }
 
-export interface OccupationalHealthcareEntry extends BaseEntry {
+export interface OccupationalHealthCareEntry extends BaseEntry {
   type: "OccupationalHealthcare";
   employerName: string;
   sickLeave?: {
@@ -37,9 +44,15 @@ export interface OccupationalHealthcareEntry extends BaseEntry {
   };
 }
 
+export interface HealthCheckEntry extends BaseEntry {
+  type: "HealthCheck";
+  healthCheckRating: HealthCheckRating;
+}
+
 export type Entry =
   | HospitalEntry
-  | OccupationalHealthcareEntry;
+  | OccupationalHealthCareEntry
+  | HealthCheckEntry;
 
 export interface Patient {
   id: string;
