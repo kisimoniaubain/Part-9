@@ -29,14 +29,6 @@ export interface BaseEntry {
   description: string;
 }
 
-export interface HospitalEntry extends BaseEntry {
-  type: "Hospital";
-  discharge: {
-    date: string;
-    criteria: string;
-  };
-}
-
 export interface OccupationalHealthcareEntry extends BaseEntry {
   type: "OccupationalHealthcare";
   employerName: string;
@@ -46,14 +38,22 @@ export interface OccupationalHealthcareEntry extends BaseEntry {
   };
 }
 
+export interface HospitalEntry extends BaseEntry {
+  type: "Hospital";
+  discharge: {
+    date: string;
+    criteria: string;
+  };
+}
+
 export interface HealthCheckEntry extends BaseEntry {
   type: "HealthCheck";
   healthCheckRating: HealthCheckRating;
 }
 
 export type Entry =
-  | HospitalEntry
   | OccupationalHealthcareEntry
+  | HospitalEntry
   | HealthCheckEntry;
 
 export interface Patient {
@@ -78,5 +78,58 @@ export const NewPatientSchema = z.object({
   gender: z.enum(Gender),
   occupation: z.string(),
 });
+
+/* =========================
+   NEW ENTRY VALIDATION
+   Exercise 9.29
+   ========================= */
+
+const BaseEntrySchema = z.object({
+  date: z.string(),
+  specialist: z.string(),
+  diagnosisCodes: z.array(z.string()).optional(),
+  description: z.string(),
+});
+
+const HospitalEntrySchema = BaseEntrySchema.extend({
+  type: z.literal("Hospital"),
+  discharge: z.object({
+    date: z.string(),
+    criteria: z.string(),
+  }),
+});
+
+const OccupationalHealthcareEntrySchema =
+  BaseEntrySchema.extend({
+    type: z.literal("OccupationalHealthcare"),
+    employerName: z.string(),
+    sickLeave: z
+      .object({
+        startDate: z.string(),
+        endDate: z.string(),
+      })
+      .optional(),
+  });
+
+const HealthCheckEntrySchema = BaseEntrySchema.extend({
+  type: z.literal("HealthCheck"),
+  healthCheckRating: z.union([
+    z.literal(HealthCheckRating.Healthy),
+    z.literal(HealthCheckRating.LowRisk),
+    z.literal(HealthCheckRating.HighRisk),
+    z.literal(HealthCheckRating.CriticalRisk),
+  ]),
+});
+
+export const NewEntrySchema = z.discriminatedUnion(
+  "type",
+  [
+    HospitalEntrySchema,
+    OccupationalHealthcareEntrySchema,
+    HealthCheckEntrySchema,
+  ]
+);
+
+export type NewEntry = z.infer<typeof NewEntrySchema>;
 
 export type NewPatient = z.infer<typeof NewPatientSchema>;

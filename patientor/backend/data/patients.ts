@@ -6,6 +6,7 @@ import {
   Patient,
 } from "../src/types";
 
+
 const johnHospitalEntry: HospitalEntry = {
   id: "d811e46d-70b3-4d90-b090-4535c7cf8fb1",
   date: "2015-01-02",

@@ -4,7 +4,11 @@ import { v1 as uuid } from "uuid";
 
 import diagnoses from "../data/diagnoses";
 import patients from "../data/patients";
-import { NewPatientSchema, Patient } from "./types";
+import {
+  NewPatientSchema,
+  NewEntrySchema,
+  Patient,
+} from "./types";
 
 const app = express();
 
@@ -67,6 +71,40 @@ app.post("/api/patients", (req, res) => {
   patients.push(newPatient);
 
   return res.status(200).json(newPatient);
+});
+
+/*
+ * Exercise 9.29
+ * Add a new entry to a patient
+ */
+app.post("/api/patients/:id/entries", (req, res) => {
+  const patient = patients.find(
+    (patient) => patient.id === req.params.id
+  );
+
+  if (!patient) {
+    return res.status(404).json({
+      error: "Patient not found",
+    });
+  }
+
+  const result = NewEntrySchema.safeParse(req.body);
+
+  if (!result.success) {
+    return res.status(400).json({
+      error: "Invalid entry data",
+      details: result.error.issues,
+    });
+  }
+
+  const newEntry = {
+    ...result.data,
+    id: uuid(),
+  };
+
+  patient.entries.push(newEntry);
+
+  return res.status(201).json(newEntry);
 });
 
 app.listen(PORT, () => {
