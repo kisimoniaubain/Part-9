@@ -3,7 +3,6 @@ import {
   Typography,
 } from "@mui/material";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
-import WorkIcon from "@mui/icons-material/Work";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 
 import type { Entry } from "../../types";

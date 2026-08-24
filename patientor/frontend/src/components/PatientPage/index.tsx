@@ -12,6 +12,8 @@ import MaleIcon from "@mui/icons-material/Male";
 import FemaleIcon from "@mui/icons-material/Female";
 import TransgenderIcon from "@mui/icons-material/Transgender";
 
+import AddEntryForm from "../AddEntryForm";
+
 import { apiBaseUrl } from "../../constants";
 
 import type {
@@ -23,6 +25,9 @@ import EntryDetails from "../EntryDetails";
 
 const PatientPage = () => {
   const { id } = useParams<{ id: string }>();
+
+  const [showAddEntryForm, setShowAddEntryForm] =
+    useState(false);
 
   const [patient, setPatient] =
     useState<PatientFull | null>(null);
@@ -146,6 +151,68 @@ const PatientPage = () => {
         {patient.occupation}
       </Typography>
 
+      {/* Add New Entry */}
+
+      <Box
+        sx={{
+          mt: 3,
+          mb: 3,
+        }}
+      >
+        <Button
+          variant="contained"
+          type="button"
+          onClick={() => setShowAddEntryForm(true)}
+          sx={{
+            backgroundColor: "#1976d2",
+            color: "white",
+            fontWeight: 500,
+            fontSize: "0.875rem",
+            textTransform: "uppercase",
+            padding: "8px 16px",
+            borderRadius: "4px",
+            boxShadow:
+              "0 2px 4px rgba(0, 0, 0, 0.2)",
+
+            "&:hover": {
+              backgroundColor: "#1565c0",
+            },
+          }}
+        >
+          Add New Entry
+        </Button>
+      </Box>
+
+      {/* New Entry Form */}
+
+      {showAddEntryForm && (
+        <Box sx={{ mb: 4 }}>
+          <AddEntryForm
+            patientId={patient.id}
+            onCancel={() =>
+              setShowAddEntryForm(false)
+            }
+            onEntryAdded={(newEntry) => {
+              setPatient((currentPatient) => {
+                if (!currentPatient) {
+                  return currentPatient;
+                }
+
+                return {
+                  ...currentPatient,
+                  entries: [
+                    ...currentPatient.entries,
+                    newEntry,
+                  ],
+                };
+              });
+
+              setShowAddEntryForm(false);
+            }}
+          />
+        </Box>
+      )}
+
       {/* Entries */}
 
       <Typography
@@ -250,36 +317,6 @@ const PatientPage = () => {
               )}
           </Paper>
         ))}
-      </Box>
-
-      {/* Add New Entry */}
-
-      <Box
-        sx={{
-          mt: 3,
-        }}
-      >
-        <Button
-          variant="contained"
-          type="button"
-          sx={{
-            backgroundColor: "#1976d2",
-            color: "white",
-            fontWeight: 500,
-            fontSize: "0.875rem",
-            textTransform: "uppercase",
-            padding: "8px 16px",
-            borderRadius: "4px",
-            boxShadow:
-              "0 2px 4px rgba(0, 0, 0, 0.2)",
-
-            "&:hover": {
-              backgroundColor: "#1565c0",
-            },
-          }}
-        >
-          Add New Entry
-        </Button>
       </Box>
     </Paper>
   );
