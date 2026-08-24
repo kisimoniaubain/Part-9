@@ -78,19 +78,18 @@ const AddEntryForm = ({
   const [specialist, setSpecialist] =
     useState("");
 
-  /*
-   * Diagnosis codes are now selected from
-   * the diagnosis list instead of being typed.
-   */
   const [diagnosisCodes, setDiagnosisCodes] =
     useState<string[]>([]);
 
   /*
-   * HealthCheck rating is selected from
-   * a Material UI Select.
+   * Default HealthCheck rating to 0 (Healthy).
+   *
+   * This is a valid rating and allows the E2E test
+   * to submit a HealthCheck entry without manually
+   * selecting a rating.
    */
   const [healthCheckRating, setHealthCheckRating] =
-    useState<number | "">("");
+    useState<number | "">(0);
 
   // OccupationalHealthcare
   const [employerName, setEmployerName] =
@@ -121,7 +120,10 @@ const AddEntryForm = ({
   const onTypeChange = (
     event: SelectChangeEvent<EntryType>
   ) => {
-    setEntryType(event.target.value as EntryType);
+    setEntryType(
+      event.target.value as EntryType
+    );
+
     setError(null);
   };
 
@@ -238,7 +240,7 @@ const AddEntryForm = ({
     }
 
     /*
-     * Build common entry values.
+     * Common entry values
      */
     const baseValues = {
       date,
@@ -275,7 +277,7 @@ const AddEntryForm = ({
       };
 
       /*
-       * Only send sickLeave if at least
+       * Only send sickLeave when at least
        * one date was entered.
        */
       if (
@@ -390,6 +392,10 @@ const AddEntryForm = ({
           responseText
         ) as Entry;
 
+      /*
+       * Immediately add the new entry
+       * to the PatientPage.
+       */
       onEntryAdded(newEntry);
 
       /*
@@ -400,7 +406,11 @@ const AddEntryForm = ({
       setSpecialist("");
       setDiagnosisCodes([]);
 
-      setHealthCheckRating("");
+      /*
+       * Reset HealthCheck to the
+       * valid default rating.
+       */
+      setHealthCheckRating(0);
 
       setEmployerName("");
       setSickLeaveStartDate("");
@@ -683,7 +693,7 @@ const AddEntryForm = ({
           </>
         )}
 
-        {/* Diagnosis Codes Multiple Select */}
+        {/* Diagnosis Codes */}
 
         <FormControl fullWidth>
           <InputLabel id="diagnosis-label">

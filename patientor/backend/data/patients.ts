@@ -13,8 +13,7 @@ const johnHospitalEntry: HospitalEntry = {
   type: "Hospital",
   specialist: "MD House",
   diagnosisCodes: ["S62.5", "Z57.1", "Z74.3", "M51.2"],
-  description:
-    "Healing time appr. 2 weeks. patient doesn't remember how he got the injury.",
+  description: "Thumb has healed", 
   discharge: {
     date: "2015-01-16",
     criteria: "Thumb has healed.",
