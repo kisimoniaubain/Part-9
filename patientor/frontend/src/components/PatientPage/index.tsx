@@ -13,19 +13,23 @@ import FemaleIcon from "@mui/icons-material/Female";
 import TransgenderIcon from "@mui/icons-material/Transgender";
 
 import AddEntryForm from "../AddEntryForm";
+import EntryDetails from "../EntryDetails";
 
 import { apiBaseUrl } from "../../constants";
 
 import type {
   PatientFull,
   Diagnosis,
+  Entry,
 } from "../../types";
-
-import EntryDetails from "../EntryDetails";
 
 const PatientPage = () => {
   const { id } = useParams<{ id: string }>();
 
+  /*
+   * Controls whether the Add Entry form
+   * is visible.
+   */
   const [showAddEntryForm, setShowAddEntryForm] =
     useState(false);
 
@@ -35,6 +39,9 @@ const PatientPage = () => {
   const [diagnoses, setDiagnoses] =
     useState<Diagnosis[]>([]);
 
+  /*
+   * Fetch patient
+   */
   useEffect(() => {
     const fetchPatient = async () => {
       if (!id) {
@@ -58,6 +65,9 @@ const PatientPage = () => {
     void fetchPatient();
   }, [id]);
 
+  /*
+   * Fetch diagnoses
+   */
   useEffect(() => {
     const fetchDiagnoses = async () => {
       const response = await fetch(
@@ -77,10 +87,16 @@ const PatientPage = () => {
     void fetchDiagnoses();
   }, []);
 
+  /*
+   * Loading
+   */
   if (!patient) {
     return <Typography>Loading...</Typography>;
   }
 
+  /*
+   * Gender icon
+   */
   const GenderIcon =
     patient.gender === "male"
       ? MaleIcon
@@ -88,14 +104,49 @@ const PatientPage = () => {
         ? FemaleIcon
         : TransgenderIcon;
 
+  /*
+   * Get diagnosis description
+   */
   const getDiagnosisDescription = (
     code: string
   ): string => {
     const diagnosis = diagnoses.find(
-      (diagnosis) => diagnosis.code === code
+      (diagnosis) =>
+        diagnosis.code === code
     );
 
-    return diagnosis?.name ?? "Unknown diagnosis";
+    return (
+      diagnosis?.name ??
+      "Unknown diagnosis"
+    );
+  };
+
+  /*
+   * Called when a new entry has been
+   * successfully added.
+   */
+  const handleEntryAdded = (
+    entry: Entry
+  ) => {
+    setPatient((currentPatient) => {
+      if (!currentPatient) {
+        return currentPatient;
+      }
+
+      return {
+        ...currentPatient,
+        entries: [
+          ...currentPatient.entries,
+          entry,
+        ],
+      };
+    });
+
+    /*
+     * Hide the form after successful
+     * submission.
+     */
+    setShowAddEntryForm(false);
   };
 
   return (
@@ -108,7 +159,9 @@ const PatientPage = () => {
         backgroundColor: "white",
       }}
     >
-      {/* Patient information */}
+      {/* =========================
+          Patient information
+          ========================= */}
 
       <Box
         sx={{
@@ -138,7 +191,8 @@ const PatientPage = () => {
           mb: 0.5,
         }}
       >
-        <strong>ssn:</strong> {patient.ssn}
+        <strong>ssn:</strong>{" "}
+        {patient.ssn}
       </Typography>
 
       <Typography
@@ -151,69 +205,69 @@ const PatientPage = () => {
         {patient.occupation}
       </Typography>
 
-      {/* Add New Entry */}
+      {/* =========================
+          Add New Entry button
+          ========================= */}
 
-      <Box
-        sx={{
-          mt: 3,
-          mb: 3,
-        }}
-      >
-        <Button
-          variant="contained"
-          type="button"
-          onClick={() => setShowAddEntryForm(true)}
+      {!showAddEntryForm && (
+        <Box
           sx={{
-            backgroundColor: "#1976d2",
-            color: "white",
-            fontWeight: 500,
-            fontSize: "0.875rem",
-            textTransform: "uppercase",
-            padding: "8px 16px",
-            borderRadius: "4px",
-            boxShadow:
-              "0 2px 4px rgba(0, 0, 0, 0.2)",
-
-            "&:hover": {
-              backgroundColor: "#1565c0",
-            },
+            mt: 3,
           }}
         >
-          Add New Entry
-        </Button>
-      </Box>
+          <Button
+            variant="contained"
+            type="button"
+            onClick={() =>
+              setShowAddEntryForm(true)
+            }
+            sx={{
+              backgroundColor: "#1976d2",
+              color: "white",
+              fontWeight: 500,
+              fontSize: "0.875rem",
+              textTransform: "uppercase",
+              padding: "8px 16px",
+              borderRadius: "4px",
+              boxShadow:
+                "0 2px 4px rgba(0, 0, 0, 0.2)",
 
-      {/* New Entry Form */}
+              "&:hover": {
+                backgroundColor: "#1565c0",
+              },
+            }}
+          >
+            Add New Entry
+          </Button>
+        </Box>
+      )}
+
+      {/* =========================
+          Add Entry Form
+
+          IMPORTANT:
+          This is ABOVE the Entries
+          section.
+          ========================= */}
 
       {showAddEntryForm && (
-        <Box sx={{ mb: 4 }}>
+        <Box sx={{ mt: 3 }}>
           <AddEntryForm
             patientId={patient.id}
+            diagnoses={diagnoses}
+            onEntryAdded={
+              handleEntryAdded
+            }
             onCancel={() =>
               setShowAddEntryForm(false)
             }
-            onEntryAdded={(newEntry) => {
-              setPatient((currentPatient) => {
-                if (!currentPatient) {
-                  return currentPatient;
-                }
-
-                return {
-                  ...currentPatient,
-                  entries: [
-                    ...currentPatient.entries,
-                    newEntry,
-                  ],
-                };
-              });
-
-              setShowAddEntryForm(false);
-            }}
           />
         </Box>
       )}
 
-      {/* Entries */}
+      {/* =========================
+          Entries heading
+          ========================= */}
 
       <Typography
         variant="h5"
@@ -227,6 +281,10 @@ const PatientPage = () => {
         Entries
       </Typography>
 
+      {/* =========================
+          Entries
+          ========================= */}
+
       <Box
         sx={{
           display: "flex",
@@ -234,89 +292,99 @@ const PatientPage = () => {
           gap: 2,
         }}
       >
-        {patient.entries.map((entry) => (
-          <Paper
-            key={entry.id}
-            variant="outlined"
-            sx={{
-              border: "1px solid #9e9e9e",
-              borderRadius: "6px",
-              padding: 2,
-              boxShadow: "none",
-              backgroundColor: "#fff",
-            }}
-          >
-            {/* Entry date */}
-
-            <Box
+        {patient.entries.map(
+          (entry) => (
+            <Paper
+              key={entry.id}
+              variant="outlined"
               sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                mb: 1.5,
+                border:
+                  "1px solid #9e9e9e",
+                borderRadius: "6px",
+                padding: 2,
+                boxShadow: "none",
+                backgroundColor: "#fff",
               }}
             >
+              {/* Entry date */}
+
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  mb: 1.5,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontFamily: "serif",
+                    fontSize:
+                      "0.95rem",
+                  }}
+                >
+                  {entry.date}
+                </Typography>
+              </Box>
+
+              {/* Entry description */}
+
               <Typography
                 sx={{
                   fontFamily: "serif",
-                  fontSize: "0.95rem",
+                  fontStyle: "italic",
+                  fontSize:
+                    "0.95rem",
+                  mb: 1.5,
                 }}
               >
-                {entry.date}
+                {entry.description}
               </Typography>
-            </Box>
 
-            {/* Entry description */}
+              {/* Entry-specific details */}
 
-            <Typography
-              sx={{
-                fontFamily: "serif",
-                fontStyle: "italic",
-                fontSize: "0.95rem",
-                mb: 1.5,
-              }}
-            >
-              {entry.description}
-            </Typography>
+              <EntryDetails
+                entry={entry}
+              />
 
-            {/* Entry-specific details */}
+              {/* Diagnosis codes */}
 
-            <EntryDetails entry={entry} />
-
-            {/* Diagnosis codes */}
-
-            {entry.diagnosisCodes &&
-              entry.diagnosisCodes.length > 0 && (
-                <Box
-                  component="ul"
-                  sx={{
-                    mt: 2,
-                    mb: 0,
-                    pl: 3,
-                  }}
-                >
-                  {entry.diagnosisCodes.map(
-                    (code) => (
-                      <li key={code}>
-                        <Typography
-                          component="span"
-                          sx={{
-                            fontFamily: "serif",
-                            fontSize: "0.9rem",
-                          }}
-                        >
-                          {code}{" "}
-                          {getDiagnosisDescription(
-                            code
-                          )}
-                        </Typography>
-                      </li>
-                    )
-                  )}
-                </Box>
-              )}
-          </Paper>
-        ))}
+              {entry.diagnosisCodes &&
+                entry.diagnosisCodes
+                  .length > 0 && (
+                  <Box
+                    component="ul"
+                    sx={{
+                      mt: 2,
+                      mb: 0,
+                      pl: 3,
+                    }}
+                  >
+                    {entry.diagnosisCodes.map(
+                      (code) => (
+                        <li key={code}>
+                          <Typography
+                            component="span"
+                            sx={{
+                              fontFamily:
+                                "serif",
+                              fontSize:
+                                "0.9rem",
+                            }}
+                          >
+                            {code}{" "}
+                            {getDiagnosisDescription(
+                              code
+                            )}
+                          </Typography>
+                        </li>
+                      )
+                    )}
+                  </Box>
+                )}
+            </Paper>
+          )
+        )}
       </Box>
     </Paper>
   );

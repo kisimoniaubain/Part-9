@@ -3,9 +3,11 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
   FormControl,
   InputLabel,
   MenuItem,
+  OutlinedInput,
   Paper,
   Select,
   TextField,
@@ -13,13 +15,14 @@ import {
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 
-import type { Entry } from "../types";
+import type { Entry, Diagnosis } from "../types";
 import { apiBaseUrl } from "../constants";
 
 interface AddEntryFormProps {
   patientId: string;
   onEntryAdded: (entry: Entry) => void;
   onCancel: () => void;
+  diagnoses?: Diagnosis[];
 }
 
 type EntryType =
@@ -64,6 +67,7 @@ const AddEntryForm = ({
   patientId,
   onEntryAdded,
   onCancel,
+  diagnoses = [],
 }: AddEntryFormProps) => {
   const [entryType, setEntryType] =
     useState<EntryType>("HealthCheck");
@@ -73,24 +77,35 @@ const AddEntryForm = ({
     useState("");
   const [specialist, setSpecialist] =
     useState("");
-  const [diagnosisCodes, setDiagnosisCodes] =
-    useState("");
 
-  // HealthCheck
+  /*
+   * Diagnosis codes are now selected from
+   * the diagnosis list instead of being typed.
+   */
+  const [diagnosisCodes, setDiagnosisCodes] =
+    useState<string[]>([]);
+
+  /*
+   * HealthCheck rating is selected from
+   * a Material UI Select.
+   */
   const [healthCheckRating, setHealthCheckRating] =
-    useState("");
+    useState<number | "">("");
 
   // OccupationalHealthcare
   const [employerName, setEmployerName] =
     useState("");
+
   const [sickLeaveStartDate, setSickLeaveStartDate] =
     useState("");
+
   const [sickLeaveEndDate, setSickLeaveEndDate] =
     useState("");
 
   // Hospital
   const [dischargeDate, setDischargeDate] =
     useState("");
+
   const [dischargeCriteria, setDischargeCriteria] =
     useState("");
 
@@ -100,15 +115,49 @@ const AddEntryForm = ({
   const [submitting, setSubmitting] =
     useState(false);
 
+  /*
+   * Entry type
+   */
   const onTypeChange = (
-    event: SelectChangeEvent
+    event: SelectChangeEvent<EntryType>
   ) => {
-    setEntryType(
-      event.target.value as EntryType
-    );
+    setEntryType(event.target.value as EntryType);
     setError(null);
   };
 
+  /*
+   * HealthCheck rating
+   */
+  const onHealthCheckRatingChange = (
+    event: SelectChangeEvent<number>
+  ) => {
+    setHealthCheckRating(
+      Number(event.target.value)
+    );
+
+    setError(null);
+  };
+
+  /*
+   * Diagnosis code multiple select
+   */
+  const onDiagnosisChange = (
+    event: SelectChangeEvent<string[]>
+  ) => {
+    const value = event.target.value;
+
+    setDiagnosisCodes(
+      typeof value === "string"
+        ? value.split(",")
+        : value
+    );
+
+    setError(null);
+  };
+
+  /*
+   * Submit
+   */
   const submit = async (
     event: React.FormEvent
   ) => {
@@ -116,20 +165,86 @@ const AddEntryForm = ({
 
     setError(null);
 
-    const parsedDiagnosisCodes =
-      diagnosisCodes
-        .split(",")
-        .map((code) => code.trim())
-        .filter(
-          (code) => code.length > 0
-        );
+    /*
+     * Basic frontend validation
+     */
+    if (!date) {
+      setError("date: invalid input");
+      return;
+    }
 
+    if (!description.trim()) {
+      setError(
+        "description: invalid input"
+      );
+      return;
+    }
+
+    if (!specialist.trim()) {
+      setError(
+        "specialist: invalid input"
+      );
+      return;
+    }
+
+    /*
+     * HealthCheck
+     */
+    if (
+      entryType === "HealthCheck" &&
+      healthCheckRating === ""
+    ) {
+      setError(
+        "healthCheckRating: invalid input"
+      );
+      return;
+    }
+
+    /*
+     * OccupationalHealthcare
+     */
+    if (
+      entryType ===
+        "OccupationalHealthcare" &&
+      !employerName.trim()
+    ) {
+      setError(
+        "employerName: invalid input"
+      );
+      return;
+    }
+
+    /*
+     * Hospital
+     */
+    if (
+      entryType === "Hospital" &&
+      !dischargeDate
+    ) {
+      setError(
+        "discharge.date: invalid input"
+      );
+      return;
+    }
+
+    if (
+      entryType === "Hospital" &&
+      !dischargeCriteria.trim()
+    ) {
+      setError(
+        "discharge.criteria: invalid input"
+      );
+      return;
+    }
+
+    /*
+     * Build common entry values.
+     */
     const baseValues = {
       date,
-      description,
-      specialist,
-      diagnosisCodes:
-        parsedDiagnosisCodes,
+      description: description.trim(),
+      specialist: specialist.trim(),
+      diagnosisCodes,
     };
 
     let entryData: EntryData;
@@ -138,25 +253,11 @@ const AddEntryForm = ({
      * HealthCheck
      */
     if (entryType === "HealthCheck") {
-      const rating =
-        Number(healthCheckRating);
-
-      if (
-        healthCheckRating.trim() === "" ||
-        !Number.isInteger(rating) ||
-        rating < 0 ||
-        rating > 3
-      ) {
-        setError(
-          "healthCheckRating: invalid input"
-        );
-        return;
-      }
-
       entryData = {
         ...baseValues,
         type: "HealthCheck",
-        healthCheckRating: rating,
+        healthCheckRating:
+          healthCheckRating as number,
       };
     }
 
@@ -167,29 +268,23 @@ const AddEntryForm = ({
       entryType ===
       "OccupationalHealthcare"
     ) {
-      if (!employerName.trim()) {
-        setError(
-          "employerName: invalid input"
-        );
-        return;
-      }
-
       entryData = {
         ...baseValues,
         type: "OccupationalHealthcare",
-        employerName:
-          employerName.trim(),
+        employerName: employerName.trim(),
       };
 
+      /*
+       * Only send sickLeave if at least
+       * one date was entered.
+       */
       if (
         sickLeaveStartDate ||
         sickLeaveEndDate
       ) {
         entryData.sickLeave = {
-          startDate:
-            sickLeaveStartDate,
-          endDate:
-            sickLeaveEndDate,
+          startDate: sickLeaveStartDate,
+          endDate: sickLeaveEndDate,
         };
       }
     }
@@ -198,20 +293,6 @@ const AddEntryForm = ({
      * Hospital
      */
     else {
-      if (!dischargeDate.trim()) {
-        setError(
-          "discharge.date: invalid input"
-        );
-        return;
-      }
-
-      if (!dischargeCriteria.trim()) {
-        setError(
-          "discharge.criteria: invalid input"
-        );
-        return;
-      }
-
       entryData = {
         ...baseValues,
         type: "Hospital",
@@ -317,7 +398,7 @@ const AddEntryForm = ({
       setDate("");
       setDescription("");
       setSpecialist("");
-      setDiagnosisCodes("");
+      setDiagnosisCodes([]);
 
       setHealthCheckRating("");
 
@@ -379,6 +460,8 @@ const AddEntryForm = ({
           gap: 2,
         }}
       >
+        {/* Entry Type */}
+
         <FormControl
           fullWidth
           required
@@ -407,10 +490,13 @@ const AddEntryForm = ({
           </Select>
         </FormControl>
 
+        {/* Date */}
+
         <TextField
           label="Date"
           type="date"
           required
+          fullWidth
           value={date}
           onChange={(event) =>
             setDate(event.target.value)
@@ -422,9 +508,12 @@ const AddEntryForm = ({
           }}
         />
 
+        {/* Description */}
+
         <TextField
           label="Description"
           required
+          fullWidth
           value={description}
           onChange={(event) =>
             setDescription(
@@ -433,9 +522,12 @@ const AddEntryForm = ({
           }
         />
 
+        {/* Specialist */}
+
         <TextField
           label="Specialist"
           required
+          fullWidth
           value={specialist}
           onChange={(event) =>
             setSpecialist(
@@ -444,47 +536,54 @@ const AddEntryForm = ({
           }
         />
 
-        {/* HealthCheck fields */}
+        {/* HealthCheck */}
+
         {entryType ===
           "HealthCheck" && (
-          <TextField
-            label="Health Check Rating (0-3)"
-            type="number"
+          <FormControl
+            fullWidth
             required
-            value={healthCheckRating}
-            error={
-              error?.includes(
-                "healthCheckRating"
-              ) ?? false
-            }
-            helperText={
-              error?.includes(
-                "healthCheckRating"
-              )
-                ? "healthCheckRating: invalid input"
-                : ""
-            }
-            onChange={(event) => {
-              setHealthCheckRating(
-                event.target.value
-              );
+          >
+            <InputLabel id="health-rating-label">
+              Health Check Rating
+            </InputLabel>
 
-              setError(null);
-            }}
-            inputProps={{
-              min: 0,
-              max: 3,
-            }}
-          />
+            <Select
+              labelId="health-rating-label"
+              value={healthCheckRating}
+              label="Health Check Rating"
+              onChange={
+                onHealthCheckRatingChange
+              }
+            >
+              <MenuItem value={0}>
+                0 — Healthy
+              </MenuItem>
+
+              <MenuItem value={1}>
+                1 — Low Risk
+              </MenuItem>
+
+              <MenuItem value={2}>
+                2 — High Risk
+              </MenuItem>
+
+              <MenuItem value={3}>
+                3 — Critical Risk
+              </MenuItem>
+            </Select>
+          </FormControl>
         )}
 
-        {/* OccupationalHealthcare fields */}
+        {/* OccupationalHealthcare */}
+
         {entryType ===
           "OccupationalHealthcare" && (
           <>
             <TextField
               label="Employer Name"
               required
+              fullWidth
               value={employerName}
               onChange={(event) =>
                 setEmployerName(
@@ -495,7 +594,6 @@ const AddEntryForm = ({
 
             <Typography
               variant="subtitle2"
-              sx={{ mt: 1 }}
             >
               Sick Leave (Optional)
             </Typography>
@@ -503,6 +601,7 @@ const AddEntryForm = ({
             <TextField
               label="Start Date"
               type="date"
+              fullWidth
               value={
                 sickLeaveStartDate
               }
@@ -521,6 +620,7 @@ const AddEntryForm = ({
             <TextField
               label="End Date"
               type="date"
+              fullWidth
               value={
                 sickLeaveEndDate
               }
@@ -538,12 +638,13 @@ const AddEntryForm = ({
           </>
         )}
 
-        {/* Hospital fields */}
-        {entryType === "Hospital" && (
+        {/* Hospital */}
+
+        {entryType ===
+          "Hospital" && (
           <>
             <Typography
               variant="subtitle2"
-              sx={{ mt: 1 }}
             >
               Discharge Details
             </Typography>
@@ -552,6 +653,7 @@ const AddEntryForm = ({
               label="Discharge Date"
               type="date"
               required
+              fullWidth
               value={dischargeDate}
               onChange={(event) =>
                 setDischargeDate(
@@ -568,6 +670,7 @@ const AddEntryForm = ({
             <TextField
               label="Discharge Criteria"
               required
+              fullWidth
               value={
                 dischargeCriteria
               }
@@ -580,15 +683,61 @@ const AddEntryForm = ({
           </>
         )}
 
-        <TextField
-          label="Diagnosis Codes (comma-separated)"
-          value={diagnosisCodes}
-          onChange={(event) =>
-            setDiagnosisCodes(
-              event.target.value
-            )
-          }
-        />
+        {/* Diagnosis Codes Multiple Select */}
+
+        <FormControl fullWidth>
+          <InputLabel id="diagnosis-label">
+            Diagnosis Codes
+          </InputLabel>
+
+          <Select
+            labelId="diagnosis-label"
+            multiple
+            value={diagnosisCodes}
+            onChange={
+              onDiagnosisChange
+            }
+            input={
+              <OutlinedInput label="Diagnosis Codes" />
+            }
+            renderValue={(selected) => (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 0.5,
+                }}
+              >
+                {selected.map(
+                  (code) => (
+                    <Chip
+                      key={code}
+                      label={code}
+                    />
+                  )
+                )}
+              </Box>
+            )}
+          >
+            {diagnoses.map(
+              (diagnosis) => (
+                <MenuItem
+                  key={
+                    diagnosis.code
+                  }
+                  value={
+                    diagnosis.code
+                  }
+                >
+                  {diagnosis.code} —{" "}
+                  {diagnosis.name}
+                </MenuItem>
+              )
+            )}
+          </Select>
+        </FormControl>
+
+        {/* Buttons */}
 
         <Box
           sx={{
